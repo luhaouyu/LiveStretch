@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LiveStretch KSU</title>
+<style>
+  body { font-family: system-ui, sans-serif; background: #121212; color: #fff; margin: 0; padding: 16px; text-align: center; user-select: none; }
+  .card { background: #1e1e1e; border-radius: 16px; padding: 18px; }
+  h3 { margin: 0 0 6px; font-size: 16px; color: #90caf9; }
+  #val { font-size: 28px; font-weight: bold; margin: 10px 0; }
+  input[type=range] { width: 100%; margin: 14px 0; accent-color: #4fc3f7; }
+  .presets { display: flex; gap: 8px; margin-bottom: 12px; }
+  button { flex: 1; padding: 10px 6px; border: none; border-radius: 10px; background: #2c2c2c; color: #fff; font-weight: bold; }
+  button:active { background: #4fc3f7; color: #000; }
+  .reset { background: #c62828; width: 100%; padding: 12px; }
+  #status { font-size: 11px; color: #888; margin-top: 10px; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h3>LiveStretch (KernelSU)</h3>
+    <div id="val">1.00x</div>
+    <input id="slider" type="range" min="1.00" max="1.80" step="0.02" value="1.00">
+    <div class="presets">
+      <button onclick="setRatio(1.20)">1.20x</button>
+      <button onclick="setRatio(1.33)">4:3</button>
+      <button onclick="setRatio(1.50)">iPad</button>
+    </div>
+    <button class="reset" onclick="setRatio(1.00)">RESET NORMAL</button>
+    <div id="status">Siap</div>
+  </div>
+<script>
+  const slider = document.getElementById('slider');
+  const val = document.getElementById('val');
+  const statusEl = document.getElementById('status');
+  const CFG = "/data/local/tmp/stretch.cfg";
+
+  function execRoot(cmd) {
+    if (typeof ksu !== 'undefined' && ksu.exec) {
+      const cb = "cb_" + Date.now();
+      window[cb] = (errno, stdout, stderr) => {
+        statusEl.textContent = errno === 0 ? "Tersimpan" : "Error: " + stderr;
+        delete window[cb];
+      };
+      ksu.exec(cmd, "{}", cb);
+    } else {
+      statusEl.textContent = "Buka lewat KernelSU WebUI";
+    }
+  }
+
+  function applyRatio(r) {
+    const fixed = parseFloat(r).toFixed(2);
+    val.textContent = fixed + "x";
+    execRoot(`echo '${fixed}' > ${CFG} && chmod 666 ${CFG}`);
+  }
+
+  slider.addEventListener('input', () => { val.textContent = parseFloat(slider.value).toFixed(2) + "x"; });
+  slider.addEventListener('change', () => applyRatio(slider.value));
+  function setRatio(r) { slider.value = r; applyRatio(r); }
+</script>
+</body>
+</html>

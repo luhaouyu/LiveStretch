@@ -1,0 +1,6 @@
+id=live_stretch_zygisk
+name=LiveStretch Zygisk
+version=v1.0
+versionCode=1
+author=Custom
+description=Live stretched resolution controlled via KernelSU WebUI slider.
